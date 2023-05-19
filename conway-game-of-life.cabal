@@ -1,0 +1,83 @@
+cabal-version:      2.4
+name:               conway-game-of-life
+version:            0.0.1
+author:             Hari Amoor
+synopsis:           Implementation of Conway's Game of Life in Haskell
+category:           Games, Graphics
+build-type:         Simple
+description:
+  This is an implementation of the classic "Hello World" program in
+  Haskell, as an example of how to create a minimal Haskell
+  application using Cabal and Hackage.  Please submit any suggestions and
+  improvements.
+
+source-repository head
+  type:     git
+  location: https://github.com/HariAmoor-professional/ConwayGameOfLife
+
+flag threaded
+  default: True
+
+extra-source-files: README.md
+
+common shared
+  ghc-options:
+    -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns
+    -Wmissing-deriving-strategies -Wunused-foralls -Wunused-foralls
+    -fprint-explicit-foralls -fprint-explicit-kinds
+
+  default-extensions:
+    NoStarIsType
+    BangPatterns
+    ConstraintKinds
+    DataKinds
+    DeriveDataTypeable
+    DeriveFoldable
+    DeriveFunctor
+    DeriveGeneric
+    DeriveLift
+    DeriveTraversable
+    DerivingStrategies
+    DerivingVia
+    EmptyCase
+    EmptyDataDecls
+    EmptyDataDeriving
+    ExistentialQuantification
+    ExplicitForAll
+    FlexibleContexts
+    FlexibleInstances
+    GADTSyntax
+    GeneralisedNewtypeDeriving
+    ImportQualifiedPost
+    KindSignatures
+    LambdaCase
+    MultiParamTypeClasses
+    MultiWayIf
+    NumericUnderscores
+    OverloadedStrings
+    PolyKinds
+    PostfixOperators
+    RankNTypes
+    ScopedTypeVariables
+    StandaloneDeriving
+    StandaloneKindSignatures
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+    ViewPatterns
+
+  build-depends:      base >=4.2 && <5
+  hs-source-dirs:     src
+  default-language:   Haskell2010
+
+executable life
+  import:  shared
+  main-is: Main.hs
+
+  if flag(threaded)
+    -- Instructions on how to write this file are in the Cabal
+    -- documentation, which can be found here:
+    --   http://haskell.org/cabal/release/cabal-latest/doc/users-guide/
+
+    ghc-options: -threaded
