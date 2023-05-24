@@ -19,7 +19,26 @@
       ];
       systems = nixpkgs.lib.systems.flakeExposed;
 
-      perSystem = { config, pkgs, system, self', ... }: {
+      perSystem = { self', system, lib, config, pkgs, ... }: 
+      let
+        projectFlake = with pkgs; (haskell-nix.project' {
+          name = "conway-game-of-life";
+          src = ./.;
+          evalSystem = system;
+
+          compiler-nix-name = "ghc961";
+          
+          shell = {
+            tools = {
+              cabal = "latest";
+              # hlint = "latest";
+              haskell-language-server = "latest";
+            };
+
+            buildInputs = [ nixpkgs-fmt ];
+          };
+        }).flake { };
+      in {
         _module.args.pkgs = import nixpkgs {
           inherit system;
           overlays = [ haskellNix.overlay ];
@@ -45,24 +64,8 @@
           ];
         };
 
-        packages.default = ((pkgs.haskell-nix.project' {
-          name = "conway-game-of-life";
-          src = ./.;
-          evalSystem = system;
-
-          compiler-nix-name = "ghc926"; # Version of GHC to use
-
-          shell = {
-            tools = {
-              cabal = "latest";
-              hlint = "latest";
-              haskell-language-server = "latest";
-            };
-
-            buildInputs = with pkgs; [ nixpkgs-fmt ];
-          };
-        }).flake { }).packages."conway-game-of-life:exe:life";
-        devShells.default = (self'.packages.default.flake { }).devShells.default;
+        packages.default = projectFlake.packages."conway-game-of-life:exe:life";
+        devShells.default = projectFlake.devShells.default;
       };
     };
 
@@ -71,8 +74,8 @@
     # This sets the flake to use the IOG nix cache.
     # Nix should ask for permission before using it,
     # but remove it here if you do not want it to.
-    "extra-substituters" = [ "https://cache.iog.io" ];
-    "extra-trusted-public-keys" = [ "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=" ];
-    "allow-import-from-derivation" = "true";
+    extra-substituters = [ "https://cache.iog.io" ];
+    extra-trusted-public-keys = [ "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=" ];
+    allow-import-from-derivation = "true";
   };
 }
