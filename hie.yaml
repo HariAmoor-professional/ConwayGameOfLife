@@ -1,0 +1,12 @@
+cradle:
+  multi:
+    - path: "./."
+      config:
+        cradle:
+          none:
+    - path: "./src"
+      config:
+        cradle:
+          cabal:
+            - path: "./."
+              component: "exe:life"

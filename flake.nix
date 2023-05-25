@@ -9,8 +9,9 @@
     };
     flake-root.url = "github:srid/flake-root";
     flake-parts.url = "github:hercules-ci/flake-parts";
+    hls.url = "github:haskell/haskell-language-server";
   };
-  outputs = inputs@{ self, nixpkgs, flake-parts, flake-root, haskellNix, treefmt-nix }:
+  outputs = inputs@{ self, nixpkgs, flake-parts, flake-root, haskellNix, treefmt-nix, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         flake-parts.flakeModules.easyOverlay
@@ -19,23 +20,24 @@
       ];
       systems = nixpkgs.lib.systems.flakeExposed;
 
-      perSystem = { self', system, lib, config, pkgs, ... }: 
+      perSystem = { self', inputs', system, lib, config, pkgs, ... }: 
       let
+        compiler-version = "961";
+        compiler-nix-name = "ghc${compiler-version}";
         projectFlake = with pkgs; (haskell-nix.project' {
+          inherit compiler-nix-name;
+
           name = "conway-game-of-life";
           src = ./.;
           evalSystem = system;
 
-          compiler-nix-name = "ghc961";
-          
           shell = {
-            tools = {
-              cabal = "latest";
-              # hlint = "latest";
-              haskell-language-server = "latest";
-            };
+            tools.cabal = "latest";
 
-            buildInputs = [ nixpkgs-fmt ];
+            buildInputs = [
+              # inputs'.hls.packages."haskell-language-server-${compiler-version}"
+              (pkgs.haskell-nix.tool compiler-nix-name "haskell-language-server" "latest")
+            ];
           };
         }).flake { };
       in {
