@@ -28,6 +28,7 @@ common shared
 
   default-extensions:
     NoStarIsType
+    AllowAmbiguousTypes
     BangPatterns
     ConstraintKinds
     DataKinds
@@ -49,6 +50,7 @@ common shared
     GADTSyntax
     GeneralisedNewtypeDeriving
     ImportQualifiedPost
+    ImpredicativeTypes
     KindSignatures
     LambdaCase
     MultiParamTypeClasses
@@ -68,14 +70,25 @@ common shared
     ViewPatterns
 
   build-depends:
-    , array
+    , adjunctions
     , base
-  hs-source-dirs:     src
-  default-language:   Haskell2010
+    , comonad
+    , distributive
+    , utility-ht
+    , vector
+
+  default-language:   GHC2021
+
+library
+  import:          shared
+  hs-source-dirs:  src
+  exposed-modules: Logic
 
 executable life
-  import:  shared
-  main-is: Main.hs
+  import:         shared
+  hs-source-dirs: app
+  main-is:        Main.hs
+  build-depends:  conway-game-of-life
 
   if flag(threaded)
     -- Instructions on how to write this file are in the Cabal

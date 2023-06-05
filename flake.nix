@@ -20,55 +20,57 @@
       ];
       systems = nixpkgs.lib.systems.flakeExposed;
 
-      perSystem = { self', inputs', system, lib, config, pkgs, ... }: 
-      let
-        compiler-version = "961";
-        compiler-nix-name = "ghc${compiler-version}";
-        projectFlake = with pkgs; (haskell-nix.project' {
-          inherit compiler-nix-name;
+      perSystem = { self', inputs', system, lib, config, pkgs, ... }:
+        let
+          compiler-version = "961";
+          compiler-nix-name = "ghc${compiler-version}";
+          projectFlake = with pkgs; (haskell-nix.project' {
+            inherit compiler-nix-name;
 
-          name = "conway-game-of-life";
-          src = ./.;
-          evalSystem = system;
+            name = "conway-game-of-life";
+            src = ./.;
+            evalSystem = system;
 
-          shell = {
-            tools.cabal = "latest";
+            shell = {
+              tools.cabal = "latest";
 
-            buildInputs = [
-              # inputs'.hls.packages."haskell-language-server-${compiler-version}"
-              (pkgs.haskell-nix.tool compiler-nix-name "haskell-language-server" "latest")
+              buildInputs = [
+                # Needs `haskell-language-server-wrapper` for editor
+                inputs'.hls.packages."haskell-language-server-${compiler-version}"
+              ];
+            };
+          }).flake { };
+        in
+        {
+          _module.args.pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ haskellNix.overlay ];
+          };
+
+          treefmt.config = with pkgs; {
+            inherit (config.flake-root) projectRootFile;
+            package = treefmt;
+
+            programs = {
+              # ormolu = {
+              # enable = true;
+              # package = haskellPackages.fourmolu;
+              # };
+              ormolu.enable = true;
+              nixpkgs-fmt.enable = true;
+              cabal-fmt.enable = true;
+              hlint.enable = true;
+            };
+
+            settings.formatter.ormolu.options = [
+              "--ghc-opt"
+              "-XImportQualifiedPost"
             ];
           };
-        }).flake { };
-      in {
-        _module.args.pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ haskellNix.overlay ];
+
+          packages.default = projectFlake.packages."conway-game-of-life:exe:life";
+          devShells.default = projectFlake.devShells.default;
         };
-
-        treefmt.config = with pkgs; {
-          inherit (config.flake-root) projectRootFile;
-          package = treefmt;
-
-          programs = {
-            ormolu = {
-              enable = true;
-              package = haskellPackages.fourmolu;
-            };
-            nixpkgs-fmt.enable = true;
-            cabal-fmt.enable = true;
-            hlint.enable = true;
-          };
-
-          settings.formatter.ormolu.options = [
-            "--ghc-opt"
-            "-XImportQualifiedPost"
-          ];
-        };
-
-        packages.default = projectFlake.packages."conway-game-of-life:exe:life";
-        devShells.default = projectFlake.devShells.default;
-      };
     };
 
   # --- Flake Local Nix Configuration ----------------------------
