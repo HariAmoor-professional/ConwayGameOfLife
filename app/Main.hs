@@ -19,26 +19,28 @@ main = forM_ (iterate (extend defaultRule) start) $ \grid -> do
   putStr "\ESC[2J"
   putStrLn $ Logic.render grid
 -}
+{-# LANGUAGE TypeFamilies #-}
 
-
-{-# language TypeFamilies #-}
 module Main where
 
-import Logic
+import Control.Comonad (extend)
 import Control.Concurrent (threadDelay)
 import Control.Monad (forM_)
+import Logic
 
 tickTime :: Int
-tickTime = 200000
+tickTime = 100000
 
 start :: Grid
-start = mkGrid $
-     glider `at` (0, 0)
-  ++ beacon `at` (15, 5)
+start =
+  mkGrid $
+    glider
+      `at` (0, 0)
+      ++ beacon
+      `at` (15, 5)
 
 main :: IO ()
-main = forM_ (iterate (step basicRule) start) $ \grid -> do
+main = forM_ (iterate (extend basicRule) start) $ \grid -> do
   putStr "\ESC[2J" -- Clear terminal screen
   putStrLn (render grid)
   threadDelay tickTime
-
